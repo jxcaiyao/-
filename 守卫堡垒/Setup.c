@@ -6,6 +6,7 @@ int Setup(void)
 	
 	registerTimerEvent(timerEvent);
 	registerMouseEvent(mouseEvent);
+	registerKeyboardEvent(KeyboardEvent);
 
 	model();
 	startTimer(0, INTERVAL);
@@ -16,6 +17,6 @@ int Setup(void)
 void timerEvent(int tid)
 {
 	displayAll(&allObj);
-	decideCrash(&allObj);
+	//decideCrash(&allObj);
 	changeAll(&allObj);
 }

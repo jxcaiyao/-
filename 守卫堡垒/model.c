@@ -13,6 +13,18 @@ int random(int m, int n)
 	return randnum;
 }
 
+int sgn(double x)
+{
+	int ret = 1;
+	if (x > 0) {
+		ret = 1;
+	}
+	else if (x < 0) {
+		ret = -1;
+	}
+	return ret;
+}
+
 const LIMIT PLANEX = { 0, 1 };
 const LIMIT PLANEY = { HEIGHT / 10, 4 * HEIGHT / 10 };
 const LIMIT PLANEVX = { WIDTH / 12, WIDTH / 8 };
@@ -90,7 +102,7 @@ void freePlane(planeList *pList)
 	}
 }
 
-const int BOMBV = WIDTH / 10;
+const int BOMBV = WIDTH / 5;
 const int BOMBD = 10;
 
 void addBomb(bombList *bList, Point p)
@@ -101,13 +113,9 @@ void addBomb(bombList *bList, Point p)
 	bo->p.y = p.y;
 	
 	double a;
-	a = atan((BATTERYX - (double)p.x) / (BATTERYY - (double)p.y));
-	//beginPaint();
-	//setPenWidth(5);
-	//line(bo->p.x, bo->p.y, BATTERYX, BATTERYY);
-	//endPaint();
-	bo->v.vx = /*(int)*/(BOMBV * sin(a));
-	bo->v.vy = /*(int)*/(BOMBV * cos(a));
+	a = atan((allObj.bat->p.x - (double)p.x) / (allObj.bat->p.y - (double)p.y));
+	bo->v.vx = /*(int)*/sgn(allObj.bat->p.y - (double)p.y) * (BOMBV * sin(a));
+	bo->v.vy = /*(int)*/sgn(allObj.bat->p.y - (double)p.y) * (BOMBV * cos(a));
 	
 	bo->next = NULL;
 	if (bList->head) {
@@ -126,7 +134,16 @@ void changeBomb(bombList *bList)
 	while (bo) {
 		bo->p.x += bo->v.vx * INTERVAL / 1000;
 		bo->p.y += bo->v.vy * INTERVAL / 1000;
-		bo = bo->next;
+		//double a;
+		//a = atan((allObj.bat->p.x - bo->p.x) / (allObj.bat->p.y - bo->p.y));
+		//bo->v.vx = /*(int)*/sgn(allObj.bat->p.y - bo->p.y) * (BOMBV * sin(a));
+		//bo->v.vy = /*(int)*/sgn(allObj.bat->p.y - bo->p.y) * (BOMBV * cos(a));
+		if (bo->p.x > WIDTH || bo->p.x < 0 || bo->p.y > HEIGHT || bo->p.y < 0) {
+			deleteBomb(bList, &bo);
+		}
+		else {
+			bo = bo->next;
+		}
 	}
 }
 
@@ -166,14 +183,14 @@ void freeBomb(bombList *bList)
 }
 
 const int BULLETV = 300;
-const int GRAVITY = 60;
+const int GRAVITY = 0;
 
 void addBullet(bulletList *bList, double angle)
 {
 	Bullet *bu;
 	bu = (Bullet*)malloc(sizeof(Bullet));
-	bu->p.x = BATTERYX;
-	bu->p.y = BATTERYY;
+	bu->p.x = allObj.bat->p.x;
+	bu->p.y = allObj.bat->p.y;
 	bu->v.vx =  /*(int)*/(BULLETV * cos(angle));
 	bu->v.vy = -/*(int)*/(BULLETV * sin(angle));
 	bu->next = NULL;
@@ -193,8 +210,8 @@ void changeBullet(bulletList *bList)
 	while (bu) {
 		bu->p.x += bu->v.vx * INTERVAL / 1000;
 		bu->p.y += bu->v.vy * INTERVAL / 1000;
-		bu->v.vy += GRAVITY * INTERVAL / 1000;
-		if (bu->p.x > WIDTH || bu->p.x < 0) {
+		bu->v.vy += (double)GRAVITY * INTERVAL / 1000;
+		if (bu->p.x > WIDTH || bu->p.x < 0 || bu->p.y > HEIGHT || bu->p.y < 0) {
 			deleteBullet(bList, &bu);
 		}
 		else {
@@ -215,9 +232,12 @@ void deleteBullet(bulletList *bList, Bullet **bu)
 			bList->tail = (*bu)->last;
 		}
 	}
-	else {
+	else if((*bu)->next){
 		(*bu)->next->last = (*bu)->last;
 		bList->head = (*bu)->next;
+	}
+	else {
+		bList->head = bList->tail = NULL;
 	}
 	Bullet* temp = (*bu)->next;
 	free(*bu);
@@ -362,12 +382,12 @@ void initAll(allObject *allObj)
 
 void changeAll(allObject *allObj)
 {
-	randPlane(allObj->pll);
-	randBomb(allObj->bol, allObj->pll);
-	changePlane(allObj->pll);
-	changeBomb(allObj->bol);
+	//randPlane(allObj->pll);
+	//randBomb(allObj->bol, allObj->pll);
+	//changePlane(allObj->pll);
+	//changeBomb(allObj->bol);
 	changeBullet(allObj->bul);
-	changeCrash(allObj->crl);
+	//changeCrash(allObj->crl);
 }
 
 int probability(double p)
@@ -386,7 +406,7 @@ void randPlane(planeList *pList)
 	static int i = 0;
 	if (i == 0) {
 			addPlane(pList);
-			i = 3000 / INTERVAL;
+			i = 1000 / INTERVAL;
 	}
 	else {
 		i--;
@@ -437,7 +457,9 @@ void PlBuCrash(planeList *pList, bulletList *bList, crashList *cList)
 				pl = pl->next;
 			}
 		}
-		bu = bu->next;
+		if (bu) {
+			bu = bu->next;
+		}
 	}
 }
 
@@ -466,14 +488,16 @@ void BoBuCrash(bombList *boList, bulletList *buList, crashList *crList)
 				bo = bo->next;
 			}
 		}
-		bu = bu->next;
+		if (bu) {
+			bu = bu->next;
+		}
 	}
 }
 
 int BoBuCrashCondi(Bomb *bo, Bullet *bu)
 {
 	int ret = 0;
-	if (sqrt(pow(bo->p.x - bu->p.x, 2) + pow(bo->p.y - bu->p.y, 2)) <= 40) {
+	if (sqrt(pow(bo->p.x - bu->p.x, 2) + pow(bo->p.y - bu->p.y, 2)) <= 20) {
 		ret = 1;
 	}
 	return ret;

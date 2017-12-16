@@ -5,11 +5,12 @@ void displayAll(allObject *allObj)
 	beginPaint();
 
 	displayBackground();
+	clearDevice();
 	displayPlane(allObj->pll);
-	displayBattery(allObj->bat);
+	displayBullet(allObj->bul);
+	//displayBattery(allObj->bat);
 	displayBomb(allObj->bol);
 	displayCrash(allObj->crl);
-	displayBullet(allObj->bul);
 
 	endPaint();
 }
@@ -51,14 +52,14 @@ void displayBomb(bombList *bList)
 void bombImg(Bomb *bo)
 {
 	setBrushColor(RED);
-	setPenColor(RED);
+	setPenColor(BLACK);
 	setPenWidth(3);
 	ellipse(bo->p.x - 10, bo->p.y - 10, bo->p.x + 10, bo->p.y + 10);
 }
 
 void displayBattery(Battery *ba)
 {
-	barrelImg(ba);
+	//barrelImg(ba);
 	batteryImg(ba);
 }
 
@@ -78,10 +79,10 @@ void barrelImg(Battery *ba)
 	setPenColor(GREEN);
 	setPenWidth(20);
 	Point p;
-	p.x = BATTERYX + BARRELL * cos(ba->angle);
-	p.y = BATTERYY - BARRELL * sin(ba->angle);
+	p.x = ba->p.x + BARRELL * cos(ba->angle);
+	p.y = ba->p.y - BARRELL * sin(ba->angle);
 
-	line(BATTERYX, BATTERYY, p.x, p.y);
+	line(ba->p.x, ba->p.y, p.x, p.y);
 }
 
 void displayCrash(crashList *cList)
@@ -96,9 +97,9 @@ void displayCrash(crashList *cList)
 void crashImg(Crash *cr)
 {
 	setBrushColor(YELLOW);
-	setPenColor(YELLOW);
+	setPenColor(MAGENTA);
 	setPenWidth(3);
-	ellipse(cr->p.x - 10, cr->p.y - 10, cr->p.x + 10, cr->p.y + 10);
+	ellipse(cr->p.x - 20, cr->p.y - 20, cr->p.x + 20, cr->p.y + 20);
 }
 
 void displayBullet(bulletList *bList)
@@ -113,7 +114,7 @@ void displayBullet(bulletList *bList)
 void bulletImg(Bullet *bu)
 {
 	setBrushColor(BLUE);
-	setPenColor(BLUE);
+	setPenColor(CYAN);
 	setPenWidth(3);
 	ellipse(bu->p.x - 10, bu->p.y - 10, bu->p.x + 10, bu->p.y + 10);
 }

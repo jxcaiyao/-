@@ -101,6 +101,7 @@ typedef struct _allObject {
 extern allObject allObj;
 
 int random(int m, int n);
+int sgn(double x);
 
 void addPlane(planeList *pList);
 void changePlane(planeList *pList);
